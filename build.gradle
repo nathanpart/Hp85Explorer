@@ -7,6 +7,7 @@ version = '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
+    jcenter()
 }
 
 application {
@@ -17,6 +18,10 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "org.jetbrains.kotlin:kotlin-reflect:1.4.0"
     implementation "no.tornado:tornadofx:$tornadofx_version"
+    implementation "mysql:mysql-connector-java:5.1.48"
+    implementation "org.jetbrains.exposed:exposed-core:$exposed_version"
+    implementation "org.jetbrains.exposed:exposed-dao:$exposed_version"
+    implementation "org.jetbrains.exposed:exposed-jdbc:$exposed_version"
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit"
 }
 

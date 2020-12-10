@@ -71,56 +71,63 @@ class Roms {
         return ((this byteAt (location + 1))!!.toInt() shl 8) or (this byteAt location)!!.toInt()
     }
 
-    fun romSlice(location: Int, size: Int): List<Byte> {
-        if (location !in 0x0000..0x7FFF || size < 0) return listOf()
+    fun slice(indices: IntRange): List<Byte> {
+        with(indices) {
+            if (first !in 0x0000..0x7FFF || first < 0) return listOf()
 
-        val endPoint = location + size
-        val start0 = location in 0x0000..0x1FFF
-        val start1 = location in 0x2000..0x3FFF
-        val start2 = location in 0x4000..0x5FFF
-        val start3 = location in 0x6000..0x7FFF
-        val end0 = endPoint in 0x0000..0x2000
-        val end1 = endPoint in 0x2001..0x4000
-        val end2 = endPoint in 0x4001..0x6000
-        val end3 = endPoint in 0x6001..0x8000
-        val end4 = endPoint > 0x8000
+            val endPoint = last + 1
+            val start0 = first in 0x0000..0x1FFF
+            val start1 = first in 0x2000..0x3FFF
+            val start2 = first in 0x4000..0x5FFF
+            val start3 = first in 0x6000..0x7FFF
+            val end0 = endPoint in 0x0000..0x2000
+            val end1 = endPoint in 0x2001..0x4000
+            val end2 = endPoint in 0x4001..0x6000
+            val end3 = endPoint in 0x6001..0x8000
+            val end4 = endPoint > 0x8000
 
-        val sliceStart = when(location) {
-            in 0x0000..0x1FFF -> location
-            in 0x2000..0x3FFF -> location - 0x2000
-            in 0x4000..0x5FFF -> location - 0x4000
-            else -> location - 0x6000
-        }
-        val sliceEnd = when(endPoint) {
-            in 0x0000..0x2000 -> endPoint
-            in 0x2001..0x4000 -> endPoint - 0x2000
-            in 0x4001..0x6000 -> endPoint - 0x4000
-            else -> endPoint - 0x6000
-        }
+            val sliceStart = when (first) {
+                in 0x0000..0x1FFF -> first
+                in 0x2000..0x3FFF -> first - 0x2000
+                in 0x4000..0x5FFF -> first - 0x4000
+                else -> first - 0x6000
+            }
+            val sliceEnd = when (endPoint) {
+                in 0x0000..0x2000 -> endPoint
+                in 0x2001..0x4000 -> endPoint - 0x2000
+                in 0x4001..0x6000 -> endPoint - 0x4000
+                else -> endPoint - 0x6000
+            }
 
-        return when {
-            start0 && end0 -> rom0.slice(sliceStart until sliceEnd)
-            start0 && end1 -> rom0.slice(sliceStart until 0x2000) + rom1.slice(0 until sliceEnd)
-            start0 && end2 -> rom0.slice(sliceStart until 0x2000) + rom1 + rom2.slice(0 until sliceEnd)
-            start0 && end3 -> rom0.slice(sliceStart until 0x2000) + rom1 + rom2 + appRom.slice(0 until sliceEnd)
-            start0 && end4 -> rom0.slice(sliceStart until 0x2000) + rom1 + rom2 + appRom
+            return when {
+                start0 && end0 -> rom0.slice(sliceStart until sliceEnd)
+                start0 && end1 -> rom0.slice(sliceStart until 0x2000) + rom1.slice(0 until sliceEnd)
+                start0 && end2 -> rom0.slice(sliceStart until 0x2000) + rom1 + rom2.slice(0 until sliceEnd)
+                start0 && end3 -> rom0.slice(sliceStart until 0x2000) + rom1 + rom2 + appRom.slice(0 until sliceEnd)
+                start0 && end4 -> rom0.slice(sliceStart until 0x2000) + rom1 + rom2 + appRom
 
-            start1 && end1 -> rom1.slice(sliceStart until sliceEnd)
-            start1 && end2 -> rom1.slice(sliceStart until 0x4000) + rom2.slice(0 until sliceEnd)
-            start1 && end3 -> rom1.slice(sliceStart until 0x4000) + rom2 + appRom.slice(0 until sliceEnd)
-            start1 && end4 -> rom1.slice(sliceStart until 0x4000) + rom2 + appRom
+                start1 && end1 -> rom1.slice(sliceStart until sliceEnd)
+                start1 && end2 -> rom1.slice(sliceStart until 0x4000) + rom2.slice(0 until sliceEnd)
+                start1 && end3 -> rom1.slice(sliceStart until 0x4000) + rom2 + appRom.slice(0 until sliceEnd)
+                start1 && end4 -> rom1.slice(sliceStart until 0x4000) + rom2 + appRom
 
-            start2 && end2 -> rom2.slice(sliceStart until sliceEnd)
-            start2 && end3 -> rom2.slice(sliceStart until 0x6000) + appRom.slice(0 until sliceEnd)
-            start2 && end4 -> rom2.slice(sliceStart until 0x6000) + appRom
+                start2 && end2 -> rom2.slice(sliceStart until sliceEnd)
+                start2 && end3 -> rom2.slice(sliceStart until 0x6000) + appRom.slice(0 until sliceEnd)
+                start2 && end4 -> rom2.slice(sliceStart until 0x6000) + appRom
 
-            start3 && end3 -> appRom.slice(sliceStart until sliceEnd)
-            start3 && end4 -> appRom.slice(sliceStart until 0x8000)
-            else -> listOf()
+                start3 && end3 -> appRom.slice(sliceStart until sliceEnd)
+                start3 && end4 -> appRom.slice(sliceStart until 0x8000)
+                else -> listOf()
+            }
         }
     }
+}
 
-    val plugInRoms = listOf(
+operator fun Roms.get(index: Int): Byte? = this byteAt index
+
+
+/*
+Plug in app roms with names
         "rom000",   // System Rom
         "rom010",   // Program Development
         "rom050",   // Assembler ROM
@@ -132,5 +139,5 @@ class Roms {
         "rom340",   // Service ROM
         "rom350",   // Advanced Programming
         "rom360"    // Printer/Plotter
-    )
-}
+
+ */

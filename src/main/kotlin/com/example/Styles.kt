@@ -9,6 +9,7 @@ import tornadofx.px
 class Styles : Stylesheet() {
     companion object {
         val heading by cssclass()
+        val address by cssclass()
     }
 
     init {
